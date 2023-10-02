@@ -17,5 +17,3 @@ try:
     play_game(client, gameId)
 except:
     print("No ongoing game")
-
-#print(next(client.board.stream_game_state(gameId)))
