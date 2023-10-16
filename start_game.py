@@ -15,12 +15,26 @@ def create_game_ai(client):
 # inputs we need: username, clock_limit, clock_increment, color
 # unchanging inputs: rated, days, variant, position
 def create_game_friend(client):
-    username = input('opponent username: \n')
+    username = get_friends(client)
     clock_limit = input('clock limit: \n')
     clock_increment = input('clock increment: \n')
     color = input('color (black or white): \n')
     client.challenges.create(username, False, clock_limit, clock_increment, None, color, None, None)
 
-    
+
+def get_friends(client):
+    dict = {} 
+    counter = 1
+    iterable = client.relations.get_users_followed()
+
+    # list friends
+    for item in iterable:
+        dict[counter] = item['id']
+        print(str(counter) + " " + item['id']) 
+        counter += 1
+
+    user = input('opponent username number: \n')
+    return dict[int(user)]
+
 # get_users_followed() gives an iterator of your friends
 #print(next(client.relations.get_users_followed()))
