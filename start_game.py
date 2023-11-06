@@ -8,6 +8,7 @@ def create_game_ai(client):
     clock_increment = input('clock increment: \n')
     color = input('color (black or white): \n')
     client.challenges.create_ai(level, clock_limit, clock_increment, None, color, None, None)
+    return color
 
 
 # create a game against a friend
@@ -20,6 +21,7 @@ def create_game_friend(client):
     clock_increment = input('clock increment: \n')
     color = input('color (black or white): \n')
     client.challenges.create(username, False, clock_limit, clock_increment, None, color, None, None)
+    return color
 
 
 def get_friends(client):
@@ -35,6 +37,3 @@ def get_friends(client):
 
     user = input('opponent username number: \n')
     return dict[int(user)]
-
-# get_users_followed() gives an iterator of your friends
-#print(next(client.relations.get_users_followed()))
