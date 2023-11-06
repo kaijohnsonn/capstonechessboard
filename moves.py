@@ -39,9 +39,3 @@ def stream_game_state(client, gameId, color):
 
             if state["status"] != "started":
                 print("Game over: " + state["status"])
-
-
-# TODO
-# start with white
-# test invalid moves
-# play against computer

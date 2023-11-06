@@ -4,10 +4,14 @@
 # unchanging inputs: days, variant, position
 def create_game_ai(client):
     level = input('level (1-8):\n')
-    clock_limit = input('clock limit: \n')
-    clock_increment = input('clock increment: \n')
     color = input('color (black or white): \n')
-    client.challenges.create_ai(level, clock_limit, clock_increment, None, color, None, None)
+    timed = input('timed (y or n):\n')
+    if timed == 'y':
+        clock_limit = input('clock limit: \n')
+        clock_increment = input('clock increment: \n')
+        client.challenges.create_ai(level, clock_limit, clock_increment, None, color, None, None)
+    else:
+        client.challenges.create_ai(level = level, color = color)
     return color
 
 
@@ -17,10 +21,14 @@ def create_game_ai(client):
 # unchanging inputs: rated, days, variant, position
 def create_game_friend(client):
     username = get_friends(client)
-    clock_limit = input('clock limit: \n')
-    clock_increment = input('clock increment: \n')
     color = input('color (black or white): \n')
-    client.challenges.create(username, False, clock_limit, clock_increment, None, color, None, None)
+    timed = input('timed (y or n):\n')
+    if timed == 'y':
+        clock_limit = input('clock limit: \n')
+        clock_increment = input('clock increment: \n')
+        client.challenges.create(username, False, clock_limit, clock_increment, None, color, None, None)
+    else:
+        client.challenges.create(username = username, color = color, rated = False)
     return color
 
 
