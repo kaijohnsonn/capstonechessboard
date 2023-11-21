@@ -31,7 +31,6 @@ control_pins = [
     [1, 1, 1, 1]
 ]
 
-# Holds incoming values from 74HC4067
 mux_values = [0] * 16
 bin_inputs = [5,6,13,26]
 Sig = 22
@@ -42,6 +41,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(bin_inputs, GPIO.OUT)  # Set GPIO pins 7~10 as outputs
 GPIO.setup(Sig, GPIO.IN)  # Set GPIO pin 23 as input
 GPIO.setup(Enable, GPIO.OUT)
+GPIO.output(Enable, GPIO.LOW) 
 
 # Initialize MCP3008 ADC on channel 0
 adc = MCP3008(channel=0)
@@ -70,9 +70,9 @@ def display_data(output_pin):
 def setEnable(mux):
     for e in range(2):    #CHANGE TO 4 ONCE ADDING OTHER MUX
         if e == mux :
-            GPIO.output(Enable[e], 0)   #0 = open 
+            GPIO.output(Enable[e], GPIO.LOW)   # LOW = open 
         else:
-            GPIO.output(Enable[e], 1)   #1 = closed
+            GPIO.output(Enable[e], GPIO.HIGH)   # HIGH = closed
 
 class NFC():
     def __init__(self, bus=0, device=0, spd=1000000):
@@ -91,16 +91,14 @@ class NFC():
 
     def close(self):
         self.reader.READER.spi.close()
-
-    def addBoard(self, rid, pin):
-        
-        self.boards[rid] = control_pins[pin] #4 digit binary
-        
+    
     def addAllBoards(self):
         #rid = port#
-        for board in range(16):
-            label = "port" + str(board)
-            self.addBoard(label, board)
+        for pin in range(16):
+            label = "port" + str(pin)
+            self.addBoard(label, pin)
+
+            self.boards[label] = control_pins[pin]  #4 digit binary
             
      
     def selectBoard(self, rid):
@@ -117,12 +115,17 @@ class NFC():
     def read(self, rid):
        
         if not self.selectBoard(rid):
+            print("fail to set mux value")
             return None
+        
+        GPIO.setup(Sig, GPIO.OUT)
         self.reinit()
         cid, val = self.reader.read_no_block()
         self.close()
         
-        return cid #card id #
+        GPIO.setup(Sig, GPIO.IN)
+        
+        return cid #card id
 
        
 if __name__ == "__main__":

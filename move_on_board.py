@@ -8,13 +8,23 @@ global scanner_map
 from enum import Enum
 
 class ChessPiece(Enum):
-    KING = "K"
-    QUEEN = "Q"
-    ROOK = "R"
-    BISHOP = "B"
-    KNIGHT = "N"
-    PAWN = "P"
-    EMPTY = "E"
+    KING_W = "K", "W"
+    QUEEN_W = "Q", "W"
+    ROOK_W = "R", "W"
+    BISHOP_W = "B", "W"
+    KNIGHT_W = "N", "W"
+    PAWN_W = "P", "W"
+    EMPTY = "E" , "X"
+    KING_B = "K", "B"
+    QUEEN_B = "Q", "B"
+    ROOK_B = "R", "B"
+    BISHOP_B = "B", "B"
+    KNIGHT_B = "N", "B"
+    PAWN_B = "P", "B"
+
+    def __init__(self, type, color):
+        self.type = type
+        self.colo = color
 
 def main():
     #init setup/ all empty
@@ -72,9 +82,8 @@ def read_rfids(scanner_map):
             id, text = SimpleMFRC522(idx).read()
             # print(f"RFID scanner {idx} - Card ID: {id}, Data: {text}")
             # !! Determine data held by rfid scanners and chips!!
-            if is_valid_piece(text):
                 # text should be the chess pieces code
-                board_layout[idx // 8][idx % 8][1] = ChessPiece(text) in ChessPiece
+            board_layout[idx // 8][idx % 8][1] = is_valid_piece(text)
         except Exception as e:
             print(f"Error reading from RFID scanner {idx}: {str(e)}")
     return board_layout
@@ -97,16 +106,15 @@ def create_board_matrix():
 
 
 def is_valid_piece(piece_str):
-    try:
-        piece_enum = ChessPiece(piece_str)
-        return piece_enum in ChessPiece
+      for enum_member in ChessPiece:
+        if enum_member.value == piece_str:
+            return enum_member
+        else:
+            print("No enum member found with the value: %s", piece_str)
+            return ChessPiece.EMPTY
     
-    except ValueError:
-        return False
-    
 
-
-
+# Different squares = [prev val][curr val]
 def compare_boards(prev, curr):
     different_squares = []
 
@@ -117,17 +125,30 @@ def compare_boards(prev, curr):
     for i in range(len(prev)):
         for j in range(len(prev[i])):
             if prev[i][j] != curr[i][j]:
-                different_squares.append((i, j, prev[i][j], curr[i][j]))
+                different_squares.append(prev[i][j], curr[i][j])
     return check_move(different_squares)
 
 
 def check_init():
     ##  DETERMINE IF INITIAL BOARD SETUP IS CORRECT
-    if (True):
         return True
-    else:
-        return False
-    
-def check_move():
+
+
+#  !! is there any case in chess where > 3 squares can change in one move
+   # different_squares[i] = [from][to]
+def check_move(different_squares):
     ## Determine what move is being made or return blank with ERROR message
-    return "A4B5"
+    move_to,move_from = ""
+    new_empty, new_full = []
+    for square in different_squares:
+        if (square[0][1].color == "X") & (square[1][1].color != "X"):
+            new_full.append(square[1][0])
+        elif (square[0][1].color == "X") & (square[1][1].color != "X"):
+            new_empty.append(square)
+    if len(new_full) > 1 | len(new_empty) > 2:
+        print("you moved too many pieces")
+        return ""
+    else:
+        move_to = new_full[0];
+        if move_from[0].color == move_to
+        return move_to 
