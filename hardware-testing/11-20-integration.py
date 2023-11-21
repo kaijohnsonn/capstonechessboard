@@ -9,7 +9,6 @@ from mfrc522 import SimpleMFRC522
 import spidev
 import time
 
-
 GPIO.setwarnings(False)
 
 control_pins = [
@@ -31,20 +30,27 @@ control_pins = [
     [1, 1, 1, 1]
 ]
 
-mux_values = [0] * 16
+mux_values = [[0 for _ in range(16)] for _ in range(16)]
 bin_inputs = [5,6,13,26]
-Sig = 22
-Enable = [16,12] # 2 more once impl [23 24]
 
-# Set up GPIO
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(bin_inputs, GPIO.OUT)  # Set GPIO pins 7~10 as outputs
-GPIO.setup(Sig, GPIO.IN)  # Set GPIO pin 23 as input
-GPIO.setup(Enable, GPIO.OUT)
-GPIO.output(Enable, GPIO.LOW) 
+Sig = 22
+Enable = [12,16] # 2 more once impl [23 24]
+NUM_MUX = 2 #4
+NUM_RFID = 2 #16
 
 # Initialize MCP3008 ADC on channel 0
 adc = MCP3008(channel=0)
+
+def setup():
+    nfc = NFC(bus=0, device=0, spd=1000000)
+    nfc.addAllBoards()
+    # Set up GPIO
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(bin_inputs, GPIO.OUT)  # Set GPIO pins 7~10 as outputs
+    GPIO.setup(Sig, GPIO.IN)  # Set GPIO pin 23 as input
+    GPIO.setup(Enable, GPIO.OUT)
+    GPIO.output(Enable, GPIO.LOW) 
+    return nfc
 
 def set_pin(output_pin):
     # Function to select pin on 74HC4067
@@ -60,15 +66,14 @@ def display_data(output_pin):
     print()
     print("Values from multiplexer:")
     print("========================")
-    print(f"[{control_pins[output_pin][0]}, {control_pins[output_pin][1]}, {control_pins[output_pin][2]}, {control_pins[output_pin][3]}]")
-
-    #for i in range(15):
-    #    print(f"Input I{i} = {mux_values[i]}")
+    for i in range(NUM_RFID):
+        for j in range(NUM_RFID):
+            print(f"Input I{i} = {mux_values[i][j]}")
     print("========================")
 
 #enable selected multiplexer
 def setEnable(mux):
-    for e in range(2):    #CHANGE TO 4 ONCE ADDING OTHER MUX
+    for e in range(NUM_MUX):    
         if e == mux :
             GPIO.output(Enable[e], GPIO.LOW)   # LOW = open 
         else:
@@ -96,7 +101,6 @@ class NFC():
         #rid = port#
         for pin in range(16):
             label = "port" + str(pin)
-            self.addBoard(label, pin)
 
             self.boards[label] = control_pins[pin]  #4 digit binary
             
@@ -129,18 +133,18 @@ class NFC():
 
        
 if __name__ == "__main__":
-    
-    nfc = NFC(bus=0, device=0, spd=1000000)
-    nfc.addAllBoards()
+    nfc = setup()
     
     try:
         while True:
-            for e in range(1):       # select mux CHANGE TO 4 ONCE ADDING OTHER MUX
-                setEnable(e)         # enable specific mux
-                for i in range(2):  # select specific mux element CHANGE TO 16 ONCE ADDING OTHER RFIDS
+            count = 0
+            for mux in range(NUM_MUX):       # select mux CHANGE TO 4 ONCE ADDING OTHER MUX
+                setEnable(mux)         # enable specific mux
+                for rfid in range(NUM_RFID):  # select specific mux element CHANGE TO 16 ONCE ADDING OTHER RFIDS
                     #read RFID
-                    label = "port" + str(i)
+                    label = f"port{mux * NUM_RFID + rfid}"
                     data = nfc.read(label)
+                    mux_values[mux * NUM_RFID + rfid] = data
                     print(f"{label} Data: {data}")
                     time.sleep(2)
 
@@ -148,4 +152,5 @@ if __name__ == "__main__":
         # Cleanup GPIO and ADC on Ctrl+C
         GPIO.cleanup()
         adc.close()
+        
         
