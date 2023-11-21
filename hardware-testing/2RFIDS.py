@@ -9,8 +9,6 @@ GPIO.setmode(GPIO.BCM)
 class NFC():
     def __init__(self, bus=0, device=0, spd=1000000):
         self.reader = SimpleMFRC522()
-        #self.close()
-        #self.bus
         self.boards = {}
         
         self.bus = bus
@@ -56,7 +54,7 @@ class NFC():
         else:
             card_name = cid
         
-        return val
+        return card_name
     
     def write(self, rid, value):
         if not self.selectBoard(rid):
@@ -72,23 +70,24 @@ if __name__ == "__main__":
     
     nfc = NFC(bus=0, device=0, spd=1000000)
     
-      
     try:
         while True:
-            nfc.addBoard("reader1",5)
-            nfc.addBoard("reader2",6)  
+            #for i in range(26):
+            nfc.addBoard("reader1",8)
+                #nfc.addBoard("reader2",6)  
               
             data = nfc.read("reader1")
             print(f"Data: {data}")
+            #print(f"gpio: {i}")
         
             time.sleep(2)
             
-            data2 = nfc.read("reader2")
-            print(f"Data2: {data2}")
+            #data2 = nfc.read("reader2")
+            #print(f"Data2: {data2}")
             
-            time.sleep(2)
+            #time.sleep(2)
            
     finally:
         nfc.close()
         GPIO.cleanup()
-    
+                                                                                                                               
