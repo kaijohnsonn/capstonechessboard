@@ -12,7 +12,7 @@ def create_game_ai(client):
     timed = scroll_options("Timed", {"yes", "no"})
     if timed == 'yes':
         clock_limit = scroll_options("Clock Limit", {60, 120})
-        clock_increment = scroll_options("Clock Inc.", {1, 3})
+        clock_increment = scroll_options("Clock Inc.", {3})
         client.challenges.create_ai(level, clock_limit, clock_increment, None, color, None, None)
     else:
         client.challenges.create_ai(level = level, color = color)
@@ -31,7 +31,7 @@ def create_game_friend(client):
     timed = scroll_options("Timed", {"yes", "no"})
     if timed == 'yes':
         clock_limit = scroll_options("Clock Limit", {60, 120})
-        clock_increment = scroll_options("Clock Inc.", {1, 3})
+        clock_increment = scroll_options("Clock Inc.", {3})
         client.challenges.create(username, False, clock_limit, clock_increment, None, color, None, None) 
     else:
         client.challenges.create(username = username, color = color, rated = False)        
