@@ -45,16 +45,7 @@ class NFC():
         cid, val = self.reader.read_no_block()
         self.close()
         
-        if(cid == 1086441994700):
-            card_name = "tag 1"
-        elif(cid == 674643451980):
-            card_name = "tag 2"
-        elif(cid == 670298021964):
-            card_name = "both?"
-        else:
-            card_name = cid
-        
-        return card_name
+        return cid
     
     def write(self, rid, value):
         if not self.selectBoard(rid):
@@ -74,7 +65,7 @@ if __name__ == "__main__":
         while True:
             #for i in range(26):
             nfc.addBoard("reader1",8)
-                #nfc.addBoard("reader2",6)  
+            nfc.addBoard("reader2",7)  
               
             data = nfc.read("reader1")
             print(f"Data: {data}")
@@ -82,10 +73,10 @@ if __name__ == "__main__":
         
             time.sleep(2)
             
-            #data2 = nfc.read("reader2")
-            #print(f"Data2: {data2}")
+            data2 = nfc.read("reader2")
+            print(f"Data2: {data2}")
             
-            #time.sleep(2)
+            time.sleep(2)
            
     finally:
         nfc.close()

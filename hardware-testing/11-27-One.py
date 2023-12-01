@@ -13,6 +13,7 @@ GPIO.setwarnings(False)
 
 control_pins = [
     [0, 0, 0, 0],#RFID1
+    [0,0,0,1],
     [1, 0, 0, 0],#RFID2
     [0, 1, 0, 0],#LED1
     [1, 1, 0, 0],#LED2
@@ -35,9 +36,10 @@ bin_inputs = [5,6,13,26]
 
 Sig = 8
 En = [12, 16] # 2 more once impl [ 16 23 24]
-#En2 = 16
-NUM_MUX = 2 #4
-NUM_RFID = 2 #16
+En1 = 12
+En2=16
+NUM_MUX = 1 #4
+NUM_RFID = 1 #16
 
 # Initialize MCP3008 ADC on channel 0
 adc = MCP3008(channel=0)
@@ -49,8 +51,8 @@ def setup():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(bin_inputs, GPIO.OUT)  # Set GPIO pins 7~10 as outputs
     GPIO.setup(Sig, GPIO.IN)  # Set GPIO pin 23 as input
-    GPIO.setup(En, GPIO.OUT)
-    GPIO.output(En, GPIO.HIGH) 
+    GPIO.setup(En1, GPIO.OUT)
+    GPIO.output(En1, GPIO.HIGH) 
     return nfc
 
 def set_pin(output_pin):
@@ -77,10 +79,10 @@ def display_data(output_pin):
 def setEnable(mux):
     for e in range(NUM_MUX):    
         if e == mux :
-            GPIO.output(En[e], GPIO.LOW)   # LOW = open
+            GPIO.output(En1, GPIO.LOW)   # LOW = open
             print(f"Enable mux{En[e]} ")
         else:
-            GPIO.output(En[e], GPIO.HIGH)   # HIGH = closed
+            GPIO.output(En2, GPIO.HIGH)   # HIGH = closed
             print(f"Disable mux{En[e]} ")
 
 class NFC():
@@ -142,18 +144,19 @@ if __name__ == "__main__":
     try:
         while True:
             count = 0
-            for mux in range(NUM_MUX):       # select mux 
+            for mux in range(NUM_MUX):       # select mux CHANGE TO 4 ONCE ADDING OTHER MUX
                 setEnable(mux)         # enable specific mux
-                for rfid in range(NUM_RFID):  # select specific mux element 
+                for rfid in range(NUM_RFID):  # select specific mux element CHANGE TO 16 ONCE ADDING OTHER RFIDS
                     #read RFID
                     label = f"port{                                                                                                                                                                   rfid}"
                     data = nfc.read(label)
                     #mux_values[mux * NUM_RFID + rfid] = data
                     print(f"{label} Data: {data}")
-                    time.sleep(0.1)
+                    time.sleep(2)
 
     except KeyboardInterrupt:
         # Cleanup GPIO and ADC on Ctrl+C
         GPIO.cleanup()
         adc.close()
-    
+        
+        

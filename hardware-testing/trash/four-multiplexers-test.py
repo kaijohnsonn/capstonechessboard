@@ -2,18 +2,22 @@ import RPi.GPIO as GPIO
 import spidev
 from mfrc522 import SimpleMFRC522
 import time
-
+GPIO.setwarnings(False)
 # Multiplexer control pins
-s0 = 8
-s1 = 9
-s2 = 10
-s3 = 11
+s0 = 5
+s1 = 6
+s2 = 13
+s3 = 19
+en = 17
+sig = 26
+
+
 
 # Number of multiplexers
-num_multiplexers = 2
+num_multiplexers = 1
 
 # Multiplexer in "SIG" pin
-SIG_pin = 0
+SIG_pin = 26
 
 # RFID reader setup
 class NFC():
@@ -65,7 +69,7 @@ def setup_multiplexer():
     GPIO.output(s2, GPIO.LOW)
     GPIO.output(s3, GPIO.LOW)
 
-def read_multiplexer(multiplexer, channel):
+def read_multiplexer(multiplexer, channel, nfc):
     control_pins = [s0, s1, s2, s3]
 
     mux_channel = [
@@ -89,6 +93,7 @@ def read_multiplexer(multiplexer, channel):
 
     for i in range(4):
         GPIO.output(control_pins[i], mux_channel[channel][i])
+        nfc.addBoard("reader1",5)
 
 def main():
     setup_multiplexer()
@@ -97,9 +102,10 @@ def main():
     try:
         for m in range(num_multiplexers):
             for i in range(16):
-                read_multiplexer(m, i)
-                data = nfc.read(m, "reader1")
-                print(f"Data on multiplexer {m}, channel {i}: {data}")
+                
+                read_multiplexer(m, i, nfc)
+                data = nfc.read(0, "reader1")
+                print(f"Data on multiplexer {m}, channel { mux_channel[i][0]}: {data}")
                 time.sleep(2)
     finally:
         nfc.close()

@@ -1,6 +1,7 @@
 from gpiozero import MCP3008
 import time
 import RPi.GPIO as GPIO
+from gpiozero import Button
 
 GPIO.setwarnings(False)
 
@@ -29,21 +30,27 @@ control_pins = [
 
 # Holds incoming values from 74HC4067
 mux_values = [0] * 16
+Sig = 4
+GPIOPins = [5,6,13,26]
+En1 = 16
+En2 = 12
+
+button1 = Button(4) 
 
 # Set up GPIO
 GPIO.setmode(GPIO.BCM)
-GPIO.setup([4, 17, 27, 22], GPIO.OUT)  # Set GPIO pins 7~10 as outputs
-GPIO.setup(23, GPIO.OUT)  # Set GPIO pin 23 as input
-GPIO.setup(5, GPIO.OUT)
-GPIO.setup(6, GPIO.OUT)
-initial_pin_state = GPIO.input(23)
+GPIO.setup(GPIOPins, GPIO.OUT)  # Set GPIO pins 7~10 as outputs
+GPIO.setup(Sig, GPIO.OUT)  # Set GPIO pin 23 as input
+GPIO.setup(En1, GPIO.OUT)
+GPIO.setup(En2, GPIO.OUT)
+#initial_pin_state = GPIO.input(Sig)
 
 # Initialize MCP3008 ADC on channel 0
 adc = MCP3008(channel=0)
 
 def set_pin(output_pin):
     # Function to select pin on 74HC4067
-    GPIO.output([4, 17, 27, 22], control_pins[output_pin])
+    GPIO.output(GPIOPins, control_pins[output_pin])
     print(f"P1:{control_pins[output_pin][0]}\nP2:{control_pins[output_pin][1]}\n P3:{control_pins[output_pin][2]}\nP4:{control_pins[output_pin][3]}")
 
 def read_channel():
@@ -63,38 +70,61 @@ def display_data(output_pin):
 
 def restore_pin_state():
     # Restore the initial state of the pin
-    GPIO.setup(23, GPIO.OUT)
-    GPIO.output(23, initial_pin_state)
-    GPIO.setup(23, GPIO.IN)
+    GPIO.setup(Sig, GPIO.OUT)
+    GPIO.output(Sig, initial_pin_state)
+    GPIO.setup(Sig, GPIO.IN)
+    
+def button1_pressed():
+    print("Button 1 pressed!")
+
+def button2_pressed():
+    print("Button 2 pressed!")
+    
+def no_press():
+    katie = 1
     
 def loop():
     try:
-        GPIO.output(5, 1)
-        GPIO.output(6, 0)
-        for i in range(5):
+        GPIO.output(En1, 1)
+        GPIO.output(En2, 0)
+        
+        for i in range(3):
         #set_pin(i)  # Choose an input pin on the 74HC4067
         #mux_values[i] = read_channel()  # Read the value on that pin and store in array
+            if (i == 2):
+                GPIO.setup(Sig, GPIO.IN)
+                button1.when_pressed = button1_pressed
+                button1.when_released = button1_pressed
+                print(str(i))
+                time.sleep(2)
+            else:
+                button1.when_pressed = no_press
+                GPIO.setup(Sig, GPIO.OUT)
+                GPIO.output(Sig, 1)
+                GPIO.output(GPIOPins, control_pins[i])
+                print("Not pressed" + str(i))
+                time.sleep(2)
+
+
+        GPIO.output(En1, 0)
+        GPIO.output(En2, 1)
         
-            GPIO.output(23, 1)
-            GPIO.output([4, 17, 27, 22], control_pins[i])
-       
-        # Display captured data
-            display_data(i)
-            time.sleep(2)
-            
-        GPIO.output(5, 0)
-        GPIO.output(6, 1)
-        for i in range(5):
+        for i in range(3):
         #set_pin(i)  # Choose an input pin on the 74HC4067
-        #mux_values[i] = read_channel()  # Read the value on that pin and store in array 
-            GPIO.output(23, 1)
-            GPIO.output([4, 17, 27, 22], control_pins[i])
-       
-        # Display captured data
-            display_data(i)
-            time.sleep(2)
-            
-        # Restore the initial state of the pin
+        #mux_values[i] = read_channel()  # Read the value on that pin and store in array
+            if (i == 2):
+                GPIO.setup(Sig, GPIO.IN)
+                button1.when_pressed = button2_pressed
+                button1.when_released = button2_pressed
+                print(str(i))
+                time.sleep(2)
+            else:
+                button1.when_pressed = no_press
+                GPIO.setup(Sig, GPIO.OUT)
+                GPIO.output(Sig, 1)
+                GPIO.output(GPIOPins, control_pins[i])
+                print("Not pressed" + str(i))
+                time.sleep(2) 
         #restore_pin_state()
 
     except KeyboardInterrupt:
@@ -104,8 +134,8 @@ def loop():
 
 if __name__ == "__main__":
     try:
-        #while True:
-        loop()
+        while True:
+            loop()
 
     except KeyboardInterrupt:
         # Cleanup GPIO and ADC on Ctrl+C
