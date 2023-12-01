@@ -1,26 +1,23 @@
-# Has not been tested yet
+import I2C_LCD_driver
+from time import *
 
-import board
-import busio
-from adafruit_character_lcd.character_lcd_i2c import Character_LCD_I2C
+# with the timer block on the right side of the board, lcd 1 is 0x26 and
+# closest to you. the other is lcd 2
 
-def initialize_lcd(address=0x27):
-    lcd_columns = 16
-    lcd_rows = 2
-    i2c = busio.I2C(board.SCL, board.SDA)
-    lcd = Character_LCD_I2C(i2c, lcd_columns, lcd_rows, address=address)
-    return lcd
+ADDRESS_LCD1 = 0x26
+ADDRESS_LCD2 = 0x27
 
-def write_to_lcd(lcd, line1, line2):
-    lcd.clear()
-    lcd.message = f"{line1}\n{line2}"
+lcd1 = I2C_LCD_driver.lcd(ADDRESS_LCD1)
+lcd2 = I2C_LCD_driver.lcd(ADDRESS_LCD2)
 
-# Initialize two LCD displays with different addresses
-lcd1 = initialize_lcd(address=0x27)
-lcd2 = initialize_lcd(address=0x28)
+def print_lcd1(message):
+    lcd1.lcd_display_string(message, 1)
+    
+def clear_lcd1():
+    lcd1.lcd_clear()
+    
+def print_lcd2(message):
+    lcd2.lcd_display_string(message, 1)
 
-# Write to the first LCD display
-write_to_lcd(lcd1, "LCD 1", "Line 1")
-
-# Write to the second LCD display
-write_to_lcd(lcd2, "LCD 2", "Line 2")
+def clear_lcd2():
+    lcd2.lcd_clear()
