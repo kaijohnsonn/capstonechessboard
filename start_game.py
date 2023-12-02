@@ -30,8 +30,8 @@ def create_game_friend(client):
     color = scroll_options("Color", {"black", "white"})
     timed = scroll_options("Timed", {"yes", "no"})
     if timed == 'yes':
-        clock_limit = scroll_options("Clock Limit", {60, 120})
-        clock_increment = scroll_options("Clock Inc.", {3})
+        clock_limit = 60 * scroll_options("Clock (mins)", {1, 3, 5, 10, 15, 30})
+        clock_increment = scroll_options("Clock Inc.", {0, 3})
         client.challenges.create(username, False, clock_limit, clock_increment, None, color, None, None) 
     else:
         client.challenges.create(username = username, color = color, rated = False)        
