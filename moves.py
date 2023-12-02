@@ -51,14 +51,7 @@ def stream_game_state(client, gameId, color):
                 # END OF GAME HANDLING
                 print("Game over: " + state["status"])
                 
-def verify_opp_move():
-    while True:
-        if but2_pressed[0]:
-            but2_pressed[0] = False  # Reset the flag
-            # CHECK IF THE MOVE WAS CORRECT
-            break
 
-        time.sleep(0.1)
         
 def make_move_on_press():
     while True:

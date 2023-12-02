@@ -45,4 +45,4 @@ try:
     stream_game_state(client, gameId, color)
 except Exception as error:
     print(error)
-    print("No ongoing game")
+    print_lcd1("No ongoing game")

@@ -1,154 +1,119 @@
-from time import sleep
-import sys
+from gpiozero import MCP3008
 import time
+import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
-reader = SimpleMFRC522()
-button_pins = [1, 2]  # Example GPIO pins for two buttons
-global scanner_map 
-from enum import Enum
+import spidev
+import time
+from settings import BINARY_IN, SIGNAL, ENABLE, NUM_MUX, NUM_RFID, CONTROL_PINS, SLEEP
+from lcds import print_lcd1, print_lcd2, clear_lcd1, clear_lcd2
 
-class ChessPiece(Enum):
-    KING_W = "K", "W"
-    QUEEN_W = "Q", "W"
-    ROOK_W = "R", "W"
-    BISHOP_W = "B", "W"
-    KNIGHT_W = "N", "W"
-    PAWN_W = "P", "W"
-    EMPTY = "E" , "X"
-    KING_B = "K", "B"
-    QUEEN_B = "Q", "B"
-    ROOK_B = "R", "B"
-    BISHOP_B = "B", "B"
-    KNIGHT_B = "N", "B"
-    PAWN_B = "P", "B"
+def setup():
+    GPIO.setwarnings(False)
+    nfc = NFC(bus=0, device=0, spd=1000000)
+    nfc.addAllBoards()
+    # Set up GPIO
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(CONTROL_PINS, GPIO.OUT)  # Set GPIO pins 7~10 as outputs
+    GPIO.setup(SIGNAL, GPIO.IN)  # Set GPIO pin 23 as input
+    GPIO.setup(ENABLE, GPIO.OUT)
+    GPIO.output(ENABLE, GPIO.HIGH) 
+    return nfc
 
-    def __init__(self, type, color):
-        self.type = type
-        self.colo = color
-
-def main():
-    #init setup/ all empty
-    previous_board = create_board_matrix()
-    current_board = read_rfids(scanner_map)
-    while True:
-        if(check_init(current_board)):
-            break
+#enable selected multiplexer
+def setEnable(mux):
+    for e in range(NUM_MUX):    
+        if e == mux :
+            GPIO.output(ENABLE[e], GPIO.LOW)   # LOW = open
+            print(f"Enable mux{ENABLE[e]} ")
         else:
-            print("please fix initial board setup")
+            GPIO.output(En[e], GPIO.HIGH)   # HIGH = closed
+            print(f"Disable mux{ENABLE[e]} ")
 
-    while True:
-        toggle = whoseTurn()
+class NFC():
+    def __init__(self, bus=0, device=0, spd=1000000):
+        self.reader = SimpleMFRC522()
+        self.boards = {}
         
-        # User button pressed 
-        if (GPIO.input(button_pins[0]) == GPIO.LOW) & (whoseTurn() == 'U'):
-            previous_board = on_user_button_press(previous_board)
-            time.sleep(5)
+        self.bus = bus
+        self.device = device
+        self.spd = spd
 
-        # computer button pressed 
-        elif (GPIO.input(button_pins[1]) == GPIO.LOW)  & (whoseTurn() == 'O'):
-            previous_board = on_other_button_press(previous_board, other_move)  
-            time.sleep(5)
+    def reinit(self):
+        self.reader.READER.spi = spidev.SpiDev()
+        self.reader.READER.spi.open(self.bus, self.device)
+        self.reader.READER.spi.max_speed_hz = self.spd
+        self.reader.READER.MFRC522_Init()
 
-        # end of game
-        elif gameOver():
-            break
-
-# user presses button signifying end of their turn
-def on_user_button_press(previous_board):
-    # print(f"Button {button_pins[0]} pressed.")  
-    current_board = read_rfids()
-    player_move = compare_boards(previous_board, current_board)
-    make_move(player_move)
-    return current_board
-
-
-#user presses button signifying they made the computer/other player's move
-
-def on_other_button_press(previous_board, other_move):
-    # print(f"Button {button_pins[1]} pressed.")
-    current_board = read_rfids()                                # read what user's board looks like
-    player_move = compare_boards(previous_board, current_board) # check what move appears to have been made
-    if (make_move(player_move) == other_move):
-        return current_board
-    else: 
-        print("incorrectly moved other player's pieces. Please try again!")
-         
-
-def read_rfids(scanner_map):
-    board_layout = create_board_matrix()
-    for idx in scanner_map:
-        print(f"Scanning RFID scanner {idx}...")
-        try:
-            id, text = SimpleMFRC522(idx).read()
-            # print(f"RFID scanner {idx} - Card ID: {id}, Data: {text}")
-            # !! Determine data held by rfid scanners and chips!!
-                # text should be the chess pieces code
-            board_layout[idx // 8][idx % 8][1] = is_valid_piece(text)
-        except Exception as e:
-            print(f"Error reading from RFID scanner {idx}: {str(e)}")
-    return board_layout
-
-def create_board_matrix():
-    board_layout = [[["" for _ in range(2)] for _ in range(8)] for _ in range(8)]
-    count = 0
-
-    for row in range(len(board_layout)):
-        for fil in range(len(board_layout[row])):
-            # arr[0] = square id in chess notation
-            # arr[1] = empty (no pieces initialized on board)
-            temp = chr(65 + fil) + str(row+1) 
-            count += 1
-            board_layout[row][fil][0] = temp
-            board_layout[row][fil][1] = ChessPiece.EMPTY
-
-            scanner_map[count] = temp
-    return board_layout
-
-
-def is_valid_piece(piece_str):
-      for enum_member in ChessPiece:
-        if enum_member.value == piece_str:
-            return enum_member
-        else:
-            print("No enum member found with the value: %s", piece_str)
-            return ChessPiece.EMPTY
+    def close(self):
+        self.reader.READER.spi.close()
     
+    def addAllBoards(self):
+        #rid = port#
+        for pin in range(16):
+            label = "port" + str(pin)
 
-# Different squares = [prev val][curr val]
-def compare_boards(prev, curr):
-    different_squares = []
+            self.boards[label] = BINARY_IN[pin]  #4 digit binary
+            
+    def selectBoard(self, rid):
+        if not rid in self.boards:
+            # print("readerid " + rid + " not found")
+            return False
 
-    # Check if the arrays have the same dimensions
-    if len(prev) != len(curr) or len(prev[0]) != len(curr[0]):
-        print("Array error ")  # Arrays have different dimensions, cannot compare
-
-    for i in range(len(prev)):
-        for j in range(len(prev[i])):
-            if prev[i][j] != curr[i][j]:
-                different_squares.append(prev[i][j], curr[i][j])
-    return check_move(different_squares)
-
-
-def check_init():
-    ##  DETERMINE IF INITIAL BOARD SETUP IS CORRECT
+        for loop_id in self.boards:
+            if loop_id == rid:
+                GPIO.output(CONTROL_PINS, self.boards[rid])
         return True
 
+    def read(self, rid):
+       
+        if not self.selectBoard(rid):
+            print("fail to set mux value")
+            return None
+        
+        GPIO.setup(SIGNAL, GPIO.OUT)
+        self.reinit()
+        cid, val = self.reader.read_no_block()
+        self.close()
+        
+        GPIO.setup(SIGNAL, GPIO.IN)
+        
+        return cid #card id
 
-#  !! is there any case in chess where > 3 squares can change in one move
-   # different_squares[i] = [from][to]
-def check_move(different_squares):
-    ## Determine what move is being made or return blank with ERROR message
-    move_to,move_from = ""
-    new_empty, new_full = []
-    for square in different_squares:
-        if (square[0][1].color == "X") & (square[1][1].color != "X"):
-            new_full.append(square[1][0])
-        elif (square[0][1].color == "X") & (square[1][1].color != "X"):
-            new_empty.append(square)
-    if len(new_full) > 1 | len(new_empty) > 2:
-        print("you moved too many pieces")
-        return ""
-    else:
-        move_to = new_full[0];
-        if move_from[0].color == move_to
-        return move_to 
+def read_rfid():
+
+    adc = MCP3008(channel=0)
+    nfc = setup()
+    mux_values, mux_values_check = [[0 for _ in range(16)] for _ in range(16)]
+
+    try:
+        for mux_idx in range(NUM_MUX):       # select mux 
+            setEnable(mux_idx)         # enable specific mux
+            # 0 - 15 
+            for rfid_idx in range(NUM_RFID):  # select specific mux element 
+                #read RFID
+                label = "port" + str(NUM_RFID)                                                                                                                                                                rfid}"
+                data = nfc.read(label)
+
+                mux_values[mux_idx * NUM_RFID + rfid_idx] = data
+                time.sleep(SLEEP)
+
+        for mux_idx in range(NUM_MUX):       # select mux 
+            setEnable(mux_idx)         # enable specific mux
+            for rfid_idx in range(NUM_RFID):  # select specific mux element 
+                #read RFID
+                label = "port" + str(NUM_RFID)                                                                                                                                                                rfid}"
+                data = nfc.read(label)
+
+                # If first read has square empty and second reads a value then set second value to mux_vals
+                if mux_values[mux_idx * NUM_RFID + rfid_idx] != data:
+                    if mux_values[mux_idx * NUM_RFID + rfid_idx] is 'None':
+                        mux_values[mux_idx * NUM_RFID + rfid_idx] = data;
+                time.sleep(SLEEP)
+      
+        GPIO.cleanup()
+        adc.close()
+        return mux_values
+
+    except KeyboardInterrupt:
+        clear_lcd1()
+        print_lcd1('RFID Hardware Error. Assistance Needed')
