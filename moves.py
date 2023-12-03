@@ -31,13 +31,18 @@ def stream_game_state(client, gameId, color):
                 opponentLED(opponent_moves[-4:])
                 # call function with while true for detecting button 2 press.
                 # when button 2 pressed, verify move is correct
-                if(not verify_opp_move(previous_board, color, opponent_moves[-4:])):
-                    # DO SOMETHING
-                    clear_lcd1()
-                    print_lcd1('Incorrect placement:')
-                    clear_lcd2()
-                    print_lcd2(opponent_moves[-4:])
-                    isMyTurn = False #IS THIS HOW TO TRY AGAIN
+                flag = False
+
+                while not flag:
+                    if not verify_opp_move(previous_board, color, opponent_moves[-4:]):
+                        # DO SOMETHING
+                        clear_lcd1()
+                        print_lcd1('Incorrect placement:')
+                        clear_lcd2()
+                        print_lcd2(opponent_moves[-4:])
+                    else:
+                        flag = True  # Set flag to True when opp move is correct
+                    
                 isMyTurn = True
 
         if state['type'] == 'gameState':
