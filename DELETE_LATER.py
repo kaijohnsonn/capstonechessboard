@@ -41,3 +41,35 @@ def on_oponent_button_press(previous_board, other_move):
         return current_board
     else: 
         print("incorrectly moved other player's pieces. Please try again!")
+
+
+
+if(sq_one[1] == sq_two[2]):
+        if (sq_one[1] in WHITE_PAWNS and '8' in sq_two[0]):
+            # white pawn promotion  
+            return;    
+        elif (sq_one[1] in BLACK_PAWNS and '1' in sq_two[0]):
+            #black pawn promotion
+            return;
+        else:
+            # normal move
+            return str(sq_one[0]) + str(sq_two[0])
+        
+
+    if(sq_one[2] == sq_two[1]):
+        if (sq_two[1] in WHITE_PAWNS and '8' in sq_one[0] and color == 'white'):
+            #white pawn promotion
+            promote_to = scroll_options("Promote", "Queen, Knight, Rook, Bishop")
+            pro_char = promote_to[0].lower()
+            return (pro_char + str(sq_two[0][1]) + str(sq_one[0]))
+ 
+        elif (sq_two[1] in BLACK_PAWNS and '1' in sq_one[0] and color == 'black'):
+            #black pawn promotion
+            promote_to = scroll_options("Promote", "Queen, Knight, Rook, Bishop")
+            pro_char = promote_to[0].lower()
+            return (pro_char + str(sq_two[0][1]) + str(sq_one[0]))
+        else:
+            # normal move
+            return str(sq_two[0]) + str(sq_one[0])
+    else:
+        return 'error'
