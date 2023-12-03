@@ -1,3 +1,4 @@
+from leds import * 
 # Move string is the starting position and ending position (ex. e2e4)
 # Example error: HTTP 400: Bad Request: {'error': 'Piece on f8 cannot move to a2'}
 from read_board import create_board_matrix
@@ -23,10 +24,10 @@ def stream_game_state(client, gameId, color):
             opponent_moves = state["moves"]
             if opponent_moves[-4:] != lastPlayerMove and opponent_moves[-4:] != '':
                 print(f"Opponent's move: {opponent_moves[-4:]}")
-                # light up opponents leds here
+                opponentLED(opponent_moves[-4:])
                 # call function with while true for detecting button 2 press.
                 # when button 2 pressed, verify move is correct
-                verify_opp_move(previous_board)
+                # verify_opp_move(previous_board)
                 isMyTurn = True
 
         if state['type'] == 'gameState':
@@ -50,6 +51,7 @@ def stream_game_state(client, gameId, color):
                     break
                 else:
                     # INVALID MOVE HANDLE
+                    incorrectMoveLED()
                     print(error)
 
             if state["status"] != "started":

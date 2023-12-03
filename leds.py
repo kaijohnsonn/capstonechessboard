@@ -1,5 +1,6 @@
 #include all necessary packages to get LEDs to work with Raspberry Pi
 import time
+import string
 import board
 import neopixel
 
@@ -8,25 +9,35 @@ import neopixel
 #Code Chart Website to quickly identify the desired fill colour.
 # pixels1.fill((0, 220, 0))
 
-def opponentLED(move: str):
-    #Initialise a strips variable, provide the GPIO Data Pin
-    #utilised and the amount of LED Nodes on strip and brightness (0 to 1 value)
-    pixels1 = neopixel.NeoPixel(board.D18, 300, brightness=1)
+pixels1 = neopixel.NeoPixel(board.D18, 300, brightness=1)
 
-    #Below demonstrates how to individual address a colour to a LED Node, in this case
-    #LED Node 10 and colour Blue was selected
-    letter = move[0]
-    number_from_letter = string.ascii_uppercase.index(letter) - 1
-    threes = snake_matrix_value[number_from_letter,move[1]]
-    pixels1[threes-2] = (225, 225, 255)
-    pixels1[threes-1] = (225, 225, 255)
-    pixels1[threes] = (225, 225, 255)
+def incorrectMoveLED():
+    pixels2 = neopixel.NeoPixel(board.D18, 300, brightness=1)
+    pixels2.fill((225, 0, 0))
+
+def opponentLED(move: str):
+    lightUpLED(move[0,1])
+    lightUpLED(move[2,3])
 
     #Add a brief time delay to appreciate what has happened    
     time.sleep(4)
 
     #Complete the script by returning all the LED to off
     pixels1.fill((0, 0, 0))
+
+def lightUpLED(move: str):
+    #Initialise a strips variable, provide the GPIO Data Pin
+    #utilised and the amount of LED Nodes on strip and brightness (0 to 1 value)
+    # pixels1 = neopixel.NeoPixel(board.D18, 300, brightness=1)
+
+    #Below demonstrates how to individual address a colour to a LED Node, in this case
+    #LED Node 10 and colour Blue was selected
+    letter = move[0]
+    number_from_letter = string.ascii_lowercase.index(letter) - 1
+    threes = snake_matrix_value[number_from_letter,move[1]]
+    pixels1[threes-2] = (225, 225, 255)
+    pixels1[threes-1] = (225, 225, 255)
+    pixels1[threes] = (225, 225, 255)
 
 def snake_matrix_value(column, row):
     matrix = [[0,3,6,9,12,15,18,21,24,27],
