@@ -1,6 +1,10 @@
 # Move string is the starting position and ending position (ex. e2e4)
 # Example error: HTTP 400: Bad Request: {'error': 'Piece on f8 cannot move to a2'}
-from read_board import create_board_matrix
+from read_board import create_board_matrix, check_move
+from verify_moves import user_make_move, verify_opp_move
+from move_on_board import read_rfid
+from lcds import print_lcd1, print_lcd2, clear_lcd1, clear_lcd2
+
 
 def stream_game_state(client, gameId, color):
 
@@ -26,7 +30,13 @@ def stream_game_state(client, gameId, color):
                 # light up opponents leds here
                 # call function with while true for detecting button 2 press.
                 # when button 2 pressed, verify move is correct
-                verify_opp_move(previous_board)
+                
+                if(not verify_opp_move(previous_board, color, opponent_moves[-4:])):
+                    # DO SOMETHING
+                    clear_lcd1()
+                    print_lcd1('Incorrect placement:')
+                    clear_lcd2()
+                    print_lcd2(opponent_moves[-4:])
                 isMyTurn = True
 
         if state['type'] == 'gameState':
@@ -41,6 +51,7 @@ def stream_game_state(client, gameId, color):
                     # INPUT FROM RFID HERE
                     lastPlayerMove = input('Your move: \n')
                     # MOVE MAKE MOVE FUNCTION TO BUTTON 1 PRESSED
+                    lastPlayerMove, previous_board = user_make_move(previous_board, color)
                     client.board.make_move(gameId, lastPlayerMove)
                     isMyTurn = False
                     

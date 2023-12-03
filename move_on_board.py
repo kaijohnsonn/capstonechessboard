@@ -6,6 +6,7 @@ import spidev
 import time
 from settings import BINARY_IN, SIGNAL, ENABLE, NUM_MUX, NUM_RFID, CONTROL_PINS, SLEEP
 from lcds import print_lcd1, print_lcd2, clear_lcd1, clear_lcd2
+from read_board import create_board_matrix
 
 def setup():
     GPIO.setwarnings(False)
@@ -83,7 +84,7 @@ def read_rfid():
 
     adc = MCP3008(channel=0)
     nfc = setup()
-    mux_values, mux_values_check = [0 for _ in range(64)]
+    mux_values = [0 for _ in range(64)]
 
     try:
         for mux_idx in range(NUM_MUX):          # select mux 
@@ -119,7 +120,7 @@ def read_rfid():
         print_lcd1('RFID Hardware Error. Assistance Needed')
 
 def format_read(mux_values):
-    board_read = [[[0 for _ in range(2)] for _ in range(64)] for _ in range(64)]
+    board_read = create_board_matrix
     for row in range(8):
         for col in range(8):
             board_read[row][col][0] = chr(65 + col) + str(row+1) 
