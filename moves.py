@@ -67,14 +67,3 @@ def stream_game_state(client, gameId, color):
                 # END OF GAME HANDLING
                 print("Game over: " + state["status"])
                 
-
-        
-def make_move_on_press():
-    while True:
-        if but1_pressed[0]:
-            but1_pressed[0] = False  # Reset the flag
-            # SEND THE MOVE HERE
-            # client.board.make_move(gameId, lastPlayerMove)
-            break
-
-        time.sleep(0.1)
