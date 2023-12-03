@@ -1,5 +1,5 @@
 from gpiozero import MCP3008
-import time
+import time, string
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 import spidev
@@ -83,25 +83,25 @@ def read_rfid():
 
     adc = MCP3008(channel=0)
     nfc = setup()
-    mux_values, mux_values_check = [[0 for _ in range(16)] for _ in range(16)]
+    mux_values, mux_values_check = [0 for _ in range(64)]
 
     try:
-        for mux_idx in range(NUM_MUX):       # select mux 
-            setEnable(mux_idx)         # enable specific mux
+        for mux_idx in range(NUM_MUX):          # select mux 
+            setEnable(mux_idx)                  # enable specific mux
             # 0 - 15 
-            for rfid_idx in range(NUM_RFID):  # select specific mux element 
+            for rfid_idx in range(NUM_RFID):    # select specific mux element 
                 #read RFID
-                label = "port" + str(NUM_RFID)                                                                                                                                                                rfid}"
+                label = "port" + str(NUM_RFID)
                 data = nfc.read(label)
 
                 mux_values[mux_idx * NUM_RFID + rfid_idx] = data
                 time.sleep(SLEEP)
 
-        for mux_idx in range(NUM_MUX):       # select mux 
-            setEnable(mux_idx)         # enable specific mux
-            for rfid_idx in range(NUM_RFID):  # select specific mux element 
+        for mux_idx in range(NUM_MUX):          # select mux 
+            setEnable(mux_idx)                  # enable specific mux
+            for rfid_idx in range(NUM_RFID):    # select specific mux element 
                 #read RFID
-                label = "port" + str(NUM_RFID)                                                                                                                                                                rfid}"
+                label = "port" + str(NUM_RFID)                                                                                                                                                                
                 data = nfc.read(label)
 
                 # If first read has square empty and second reads a value then set second value to mux_vals
@@ -112,8 +112,17 @@ def read_rfid():
       
         GPIO.cleanup()
         adc.close()
-        return mux_values
+        return format_read(mux_values)
 
     except KeyboardInterrupt:
         clear_lcd1()
         print_lcd1('RFID Hardware Error. Assistance Needed')
+
+def format_read(mux_values):
+    board_read = [[[0 for _ in range(2)] for _ in range(64)] for _ in range(64)]
+    for row in range(8):
+        for col in range(8):
+            board_read[row][col][0] = chr(65 + col) + str(row+1) 
+            board_read[row][col][1] = mux_values[row * 8 + col]
+
+    return board_read

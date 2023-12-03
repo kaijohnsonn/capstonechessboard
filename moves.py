@@ -1,5 +1,7 @@
 # Move string is the starting position and ending position (ex. e2e4)
 # Example error: HTTP 400: Bad Request: {'error': 'Piece on f8 cannot move to a2'}
+from read_board import create_board_matrix
+
 def stream_game_state(client, gameId, color):
 
     if color == 'black':
@@ -9,6 +11,9 @@ def stream_game_state(client, gameId, color):
     lastPlayerMove = 'n/a'
 
     game_state = client.board.stream_game_state(gameId)
+    previous_board = read_rfid() # should read init state on an init button press
+
+
     for state in game_state:
         if state['type'] == 'gameFull':
             state = state['state']
@@ -21,7 +26,7 @@ def stream_game_state(client, gameId, color):
                 # light up opponents leds here
                 # call function with while true for detecting button 2 press.
                 # when button 2 pressed, verify move is correct
-                verify_opp_move()
+                verify_opp_move(previous_board)
                 isMyTurn = True
 
         if state['type'] == 'gameState':
@@ -40,12 +45,12 @@ def stream_game_state(client, gameId, color):
                     isMyTurn = False
                     
                 except Exception as error:stream_game_state
-                    if "HTTP 400: Bad Request: {'error': 'Not your turn, or game already over'}" in str(error):
-                        print("Error: Not your turn or game already over.")
-                        break
-                    else:
-                        # INVALID MOVE HANDLE
-                        print(error)
+                if "HTTP 400: Bad Request: {'error': 'Not your turn, or game already over'}" in str(error):
+                    print("Error: Not your turn or game already over.")
+                    break
+                else:
+                    # INVALID MOVE HANDLE
+                    print(error)
 
             if state["status"] != "started":
                 # END OF GAME HANDLING
