@@ -8,24 +8,34 @@ import neopixel
 #based on decimal code R, G, B. Number can be anything from 255 - 0. Use an RGB Colour
 #Code Chart Website to quickly identify the desired fill colour.
 # pixels1.fill((0, 220, 0))
-
 pixels1 = neopixel.NeoPixel(board.D18, 300, brightness=1)
 
 def incorrectMoveLED():
-    pixels2 = neopixel.NeoPixel(board.D18, 300, brightness=1)
-    pixels2.fill((225, 0, 0))
-
-def opponentLED(move: str):
-    lightUpLED(move[0,1])
-    lightUpLED(move[2,3])
-
+    pixels1 = neopixel.NeoPixel(board.D18, 300, brightness=1)
+    pixels1.fill((220, 0, 0))
+    
     #Add a brief time delay to appreciate what has happened    
-    time.sleep(4)
+    time.sleep(5)
 
     #Complete the script by returning all the LED to off
     pixels1.fill((0, 0, 0))
 
+def opponentLED(move: str):
+    print("LEDs were called")
+    lightUpLED(move[:2])
+    lightUpLED(move[-2:])
+
+    #Add a brief time delay to appreciate what has happened    
+    #time.sleep(5)
+
+    #Complete the script by returning all the LED to off
+    #pixels1.fill((0, 0, 0))
+
+def off():
+    pixels1.fill((0, 0, 0))
+    
 def lightUpLED(move: str):
+    print("LEDs small were called")
     #Initialise a strips variable, provide the GPIO Data Pin
     #utilised and the amount of LED Nodes on strip and brightness (0 to 1 value)
     # pixels1 = neopixel.NeoPixel(board.D18, 300, brightness=1)
@@ -33,26 +43,27 @@ def lightUpLED(move: str):
     #Below demonstrates how to individual address a colour to a LED Node, in this case
     #LED Node 10 and colour Blue was selected
     letter = move[0]
-    number_from_letter = string.ascii_lowercase.index(letter) - 1
-    threes = snake_matrix_value[number_from_letter,move[1]]
+    number_from_letter = string.ascii_lowercase.index(letter)
+    threes = snake_matrix_value(int(number_from_letter),int(move[-1:]) - 1)
     pixels1[threes-2] = (225, 225, 255)
     pixels1[threes-1] = (225, 225, 255)
     pixels1[threes] = (225, 225, 255)
 
 def snake_matrix_value(column, row):
-    matrix = [[0,3,6,9,12,15,18,21,24,27],
-          [57, 54, 51, 48, 45, 42, 39, 36, 33, 30],
-          [60, 63, 66, 69, 72, 75, 78, 81, 84, 87],
-          [120, 117, 114, 111, 108, 105, 102, 99, 96, 93, 90],
-          [123, 126, 129, 132, 135, 138, 141, 144, 147, 150],
-          [180, 177, 174, 171, 168, 165, 162, 159, 156, 153],
-          [183, 186, 189, 192, 195, 198, 201, 204, 207, 210],
-          [240, 237, 234, 231, 228, 225, 222, 219, 216, 213],
-          [243, 246, 249, 252, 255, 258, 261, 264, 267, 270],
-          [300, 297, 294, 291, 288, 285, 282, 279, 276, 273]]
-    return matrix[row][column]
+    print(str(column) + " " + str(row))
+    matrix = [[236,233,230,227,224,221,218,215,0,0],
+          [185, 188, 191, 194, 197, 200, 203, 206, 0, 0],
+          [176, 173, 170, 167, 164, 161, 158, 155, 0, 0],
+          [125, 128, 131, 134, 137, 140, 143, 146, 0, 0],
+          [116, 113, 110, 107, 104, 101, 98, 95, 0, 0],
+          [65, 68, 71, 74, 77, 80, 83, 86, 0, 0],
+          [56, 53, 50, 47, 44, 41, 38, 35, 0, 0],
+          [5, 8, 11, 14, 17, 20, 23, 26, 0, 0]]
+    return matrix[column][row]
 
 #%%
+#opponentLED("e2e4")
+
 
 def snake_traverse_increment(matrix):
     result = []
