@@ -118,7 +118,9 @@ def read_rfid():
         #return format_read(mux_values)
         #print_arr(format_read(mux_values))
     except Exception as error:
-        print(error)    
+        print(error) 
+        GPIO.cleanup()
+        adc.close()   
 
 
 
