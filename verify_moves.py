@@ -5,9 +5,12 @@ from lcds import print_lcd1, print_lcd2, clear_lcd1, clear_lcd2
 import time
 
 def verify_opp_move(previous_board, color, opp_move):
+    #CHECKKKKK
+    opponent_but = but2_pressed[0] if color == 'white' else but1_pressed[0]
+
     while True:
-        if but2_pressed[0]:
-            but2_pressed[0] = False         # Reset the flag
+        if opponent_but:
+            opponent_but = False         # Reset the flag
             current_board = read_rfid()     # Returns an 8x8 array of [sq_notation, rfid #]
             move_read = check_opp_move(previous_board, current_board, color)
             
@@ -17,26 +20,29 @@ def verify_opp_move(previous_board, color, opp_move):
             elif(opp_move[0].isdigit() and move_read[:3] == opp_move[:3]):                
                 #pawn promotion 
                 while True:
-                    if but2_pressed[0]:
-                        but2_pressed[0] = False  # Reset the flag
+                    if opponent_but:
+                        opponent_but = False  # Reset the flag
                         previous_board = read_rfid()
                         break;
                 return True, previous_board
             break
+        
         time.sleep(0.1)
 
 def user_make_move(previous_board, color):
+     user_but = but2_pressed[0] if color == 'white' else but1_pressed[0]
+     
      while True:
-        if but1_pressed[0]:
-            but1_pressed[0] = False         # Reset the flag
+        if user_but:
+            user_but = False         # Reset the flag
             current_board = read_rfid()     # Returns an 8x8 array of [sq_notation, rfid #]
             move_read = check_user_move(previous_board, current_board, color)
             previous_board = current_board
             if(move_read[0].isdigit()):  
                 #pawn promotion              
                 while True:
-                    if but2_pressed[0]:
-                        but2_pressed[0] = False  # Reset the flag
+                    if user_but:
+                        user_but = False  # Reset the flag
                         previous_board = read_rfid()
                         break;
             
