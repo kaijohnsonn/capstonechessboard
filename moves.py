@@ -34,7 +34,8 @@ def stream_game_state(client, gameId, color):
                 flag = False
 
                 while not flag:
-                    if not verify_opp_move(previous_board, color, opponent_moves[-4:]):
+                    verify, previous_board = verify_opp_move(previous_board, color, opponent_moves[-4:])
+                    if not verify:
                         # DO SOMETHING
                         clear_lcd1()
                         print_lcd1('Incorrect placement:')

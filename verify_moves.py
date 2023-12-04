@@ -12,11 +12,17 @@ def verify_opp_move(previous_board, color, opp_move):
             move_read = check_opp_move(previous_board, current_board, color)
             
             if(move_read == opp_move):
-                return True
-            elif(opp_move[3].isdigit() and move_read[:3] == opp_move[:3]):
-                return True
+                return True, previous_board
+            #check for computer pawn promotion
+            elif(opp_move[0].isdigit() and move_read[:3] == opp_move[:3]):                
+                #pawn promotion 
+                while True:
+                    if but2_pressed[0]:
+                        but2_pressed[0] = False  # Reset the flag
+                        previous_board = read_rfid()
+                        break;
+                return True, previous_board
             break
-
         time.sleep(0.1)
 
 def user_make_move(previous_board, color):
@@ -26,9 +32,20 @@ def user_make_move(previous_board, color):
             current_board = read_rfid()     # Returns an 8x8 array of [sq_notation, rfid #]
             move_read = check_user_move(previous_board, current_board, color)
             previous_board = current_board
+            if(move_read[0].isdigit()):  
+                #pawn promotion              
+                while True:
+                    if but2_pressed[0]:
+                        but2_pressed[0] = False  # Reset the flag
+                        previous_board = read_rfid()
+                        break;
+            
             return move_read, previous_board
 
         time.sleep(0.1)
+
+
+
 
 def lcd_pawn_promotion(piece):
     clear_lcd1()
