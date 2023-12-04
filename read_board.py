@@ -1,16 +1,13 @@
-from time import sleep
-import sys
-import time
-from start_game import scroll_options
+#from start_game import scroll_options
 from settings import WHITE_PAWNS, BLACK_PAWNS, WHITE_KING, WHITE_ROOK         
 
 
 def create_board_matrix():
-    board_layout = [[["" for _ in range(2)] for _ in range(8)] for _ in range(8)]
+    board_layout = [[[0 for _ in range(2)] for _ in range(8)] for _ in range(8)]
     count = 0
 
-    for row in range(len(board_layout)):
-        for col in range(len(board_layout[row])):
+    for row in range(8):
+        for col in range(8):
             # arr[0] = square id in chess notation
             # arr[1] = 0 (no pieces initialized on board)
             temp = chr(65 + col) + str(row+1) 
@@ -23,7 +20,7 @@ def create_board_matrix():
 #  !! is there any case in chess where > 2 squares can change in one move
 # different_squares[i] = [sq-chess-notat][ID_from][ID_to]
 def check_user_move(prev, curr, color):
-    different_squares = compare_boards(prev, curr, color)      # Different squares = [prev val][curr val]
+    different_squares = compare_boards(prev, curr)      # Different squares = [prev val][curr val]
 
     if len(different_squares) == 2:
         return check_pawn_pro(different_squares,color)
@@ -31,12 +28,12 @@ def check_user_move(prev, curr, color):
         # check for En passent, if not then invalid
         return check_passant(different_squares)
     elif len(different_squares) == 4:
-         # check for castle, if not then invalid
-         return check_castle(different_squares, color)
+        # check for castle, if not then invalid
+        return check_castle(different_squares, color)
     else:
         # Handle other cases
         # error
-        return;
+        return 'error';
 
 def check_opp_move(prev, curr, color):
     different_squares = compare_boards(prev, curr, color)      # Different squares = [prev val][curr val]
@@ -143,13 +140,13 @@ def check_pawn_pro(different_squares,color):
     
     if sq_from[1] in WHITE_PAWNS and '8' in sq_to[0] and color == 'white':
         # White pawn promotion
-        promote_to = scroll_options("Promote", "Queen, Knight, Rook, Bishop")
+        #promote_to = scroll_options("Promote", "Queen, Knight, Rook, Bishop")
         pro_char = promote_to[0].lower()
         return str(sq_from[0][1]) + str(sq_to[0]) + pro_char
 
     elif sq_from[1] in BLACK_PAWNS and '1' in sq_to[0] and color == 'black':
         # Black pawn promotion
-        promote_to = scroll_options("Promote", "Queen, Knight, Rook, Bishop")
+        #promote_to = scroll_options("Promote", "Queen, Knight, Rook, Bishop")
         pro_char = promote_to[0].lower()
         return str(sq_from[0][1]) + str(sq_to[0]) + pro_char
     else:

@@ -12,7 +12,7 @@ global SLEEP
 
 but1_pressed = [False]
 but2_pressed = [False]
-BINARY_IN = [5,6,13,26]
+CONTROL_PINS = [5,6,13,26]
 SIGNAL = 8
 ENABLE = [12, 16, 23, 24]
 NUM_MUX = 4

@@ -129,7 +129,7 @@ class lcd:
    def lcd_write_four_bits(self, data):
       self.lcd_device.write_cmd(data | LCD_BACKLIGHT)
       self.lcd_strobe(data)
-
+   
    # write a command to lcd
    def lcd_write(self, cmd, mode=0):
       self.lcd_write_four_bits(mode | (cmd & 0xF0))
@@ -140,22 +140,22 @@ class lcd:
    def lcd_write_char(self, charvalue, mode=1):
       self.lcd_write_four_bits(mode | (charvalue & 0xF0))
       self.lcd_write_four_bits(mode | ((charvalue << 4) & 0xF0))
-  
+    
    # put string function with optional char positioning
    def lcd_display_string(self, string, line=1, pos=0):
-    if line == 1:
-      pos_new = pos
-    elif line == 2:
-      pos_new = 0x40 + pos
-    elif line == 3:
-      pos_new = 0x14 + pos
-    elif line == 4:
-      pos_new = 0x54 + pos
+      if line == 1:
+         pos_new = pos
+      elif line == 2:
+         pos_new = 0x40 + pos
+      elif line == 3:
+         pos_new = 0x14 + pos
+      elif line == 4:
+         pos_new = 0x54 + pos
 
-    self.lcd_write(0x80 + pos_new)
+      self.lcd_write(0x80 + pos_new)
 
-    for char in string:
-      self.lcd_write(ord(char), Rs)
+      for char in string:
+         self.lcd_write(ord(char), Rs)
 
    # clear lcd and set to home
    def lcd_clear(self):

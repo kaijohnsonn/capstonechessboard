@@ -1,11 +1,10 @@
 from gpiozero import MCP3008
-import time, string
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 import spidev
 import time
-from read_board import create_board_matrix
-from settings import BINARY_IN, SIGNAL, ENABLE, NUM_MUX, NUM_RFID, CONTROL_PINS, SLEEP
+from read_board import *
+from settings import BINARY_IN, SIGNAL, ENABLE, CONTROL_PINS, SLEEP
 
 NUM_MUX = 1
 NUM_RFID = 16
@@ -32,7 +31,7 @@ def setup():
     GPIO.setup(CONTROL_PINS, GPIO.OUT)  # Set GPIO pins 7~10 as outputs
     GPIO.setup(SIGNAL, GPIO.IN)  # Set GPIO pin 23 as input
     GPIO.setup(ENABLE, GPIO.OUT)
-    GPIO.output(ENABLE, GPIO.HIGH) 
+    #GPIO.output(ENABLE, GPIO.HIGH) 
     return nfc
 
 #enable selected multiplexer
@@ -40,10 +39,10 @@ def setEnable(mux):
     for e in range(NUM_MUX):    
         if e == mux :
             GPIO.output(ENABLE[e], GPIO.LOW)   # LOW = open
-            print(f"Enable mux{ENABLE[e]} ")
+            print(f"Enable mux{e} ")
         else:
-            GPIO.output(En[e], GPIO.HIGH)   # HIGH = closed
-            print(f"Disable mux{ENABLE[e]} ")
+            GPIO.output(ENABLE[e], GPIO.HIGH)   # HIGH = closed
+            print(f"Disable mux{e} ")
 
 class NFC():
     def __init__(self, bus=0, device=0, spd=1000000):
@@ -67,12 +66,11 @@ class NFC():
         #rid = port#
         for pin in range(16):
             label = "port" + str(pin)
-
             self.boards[label] = BINARY_IN[pin]  #4 digit binary
             
     def selectBoard(self, rid):
         if not rid in self.boards:
-            # print("readerid " + rid + " not found")
+            print("readerid " + rid + " not found")
             return False
 
         for loop_id in self.boards:
@@ -103,34 +101,26 @@ def read_rfid():
 
     try:
         for mux_idx in range(NUM_MUX):          # select mux 
-            setEnable(mux_idx)                  # enable specific mux
+            #setEnable(mux_idx)                  # enable specific mux
+            GPIO.output(ENABLE[0], GPIO.LOW)
             # 0 - 15 
             for rfid_idx in range(NUM_RFID):    # select specific mux element 
                 #read RFID
-                label = "port" + str(NUM_RFID)
+                label = "port" + str(rfid_idx)
+
                 data = nfc.read(label)
-
-                mux_values[mux_idx * NUM_RFID + rfid_idx] = data
-                time.sleep(SLEEP)
-
-        for mux_idx in range(NUM_MUX):          # select mux 
-            setEnable(mux_idx)                  # enable specific mux
-            for rfid_idx in range(NUM_RFID):    # select specific mux element 
-                #read RFID
-                label = "port" + str(NUM_RFID)                                                                                                                                                                
-                data = nfc.read(label)
-
-                # If first read has square empty and second reads a value then set second value to mux_vals
-                if mux_values[mux_idx * NUM_RFID + rfid_idx] != data:
-                    if mux_values[mux_idx * NUM_RFID + rfid_idx] is 'None':
-                        mux_values[mux_idx * NUM_RFID + rfid_idx] = data;
+                print(str(label) + ": " + str(data) + "\n")
+                #mux_values[mux_idx * NUM_RFID + rfid_idx] = data
                 time.sleep(SLEEP)
       
-        GPIO.cleanup()
-        adc.close()
-        return format_read(mux_values)
-    except:
-        print("Error")    
+                #GPIO.cleanup()
+                #adc.close()
+        #return format_read(mux_values)
+        #print_arr(format_read(mux_values))
+    except Exception as error:
+        print(error)    
+
+
 
 def format_read(mux_values):
     board_read = create_board_matrix
@@ -159,4 +149,5 @@ def print_arr(arr):
 
 
 if __name__ == "__main__":
-    read_rfid()
+    #while True:
+     read_rfid()
