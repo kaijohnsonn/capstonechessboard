@@ -20,7 +20,11 @@ def incorrectMoveLED():
     #Complete the script by returning all the LED to off
     pixels1.fill((0, 0, 0))
 
-def opponentLED(move: str):
+#%%
+def opponentLED(move: str): # 5e6b -> e6e6
+    if move[0].isdigit():
+        move: str = move[1::-1] + move[1:3]
+
     print("LEDs were called")
     lightUpLED(move[:2])
     lightUpLED(move[-2:])
@@ -30,7 +34,7 @@ def opponentLED(move: str):
 
     #Complete the script by returning all the LED to off
     #pixels1.fill((0, 0, 0))
-
+#%%
 def off():
     pixels1.fill((0, 0, 0))
     
@@ -61,7 +65,6 @@ def snake_matrix_value(column, row):
           [5, 8, 11, 14, 17, 20, 23, 26, 0, 0]]
     return matrix[column][row]
 
-#%%
 #opponentLED("e2e4")
 
 
