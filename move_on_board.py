@@ -1,5 +1,5 @@
 from gpiozero import MCP3008
-import time, string
+import time
 import RPi.GPIO as GPIO
 from mfrc522 import SimpleMFRC522
 import spidev
@@ -17,7 +17,6 @@ def setup():
     GPIO.setup(CONTROL_PINS, GPIO.OUT)  # Set GPIO pins 7~10 as outputs
     GPIO.setup(SIGNAL, GPIO.IN)  # Set GPIO pin 23 as input
     GPIO.setup(ENABLE, GPIO.OUT)
-    GPIO.output(ENABLE, GPIO.HIGH) 
     return nfc
 
 #enable selected multiplexer
@@ -25,10 +24,10 @@ def setEnable(mux):
     for e in range(NUM_MUX):    
         if e == mux :
             GPIO.output(ENABLE[e], GPIO.LOW)   # LOW = open
-            print(f"Enable mux{ENABLE[e]} ")
+            # print(f"Enable mux{ENABLE[e]} ")
         else:
-            GPIO.output(En[e], GPIO.HIGH)   # HIGH = closed
-            print(f"Disable mux{ENABLE[e]} ")
+            GPIO.output(ENABLE[e], GPIO.HIGH)   # HIGH = closed
+            # print(f"Disable mux{ENABLE[e]} ")
 
 class NFC():
     def __init__(self, bus=0, device=0, spd=1000000):
@@ -52,7 +51,6 @@ class NFC():
         #rid = port#
         for pin in range(16):
             label = "port" + str(pin)
-
             self.boards[label] = BINARY_IN[pin]  #4 digit binary
             
     def selectBoard(self, rid):
@@ -89,10 +87,9 @@ def read_rfid():
     try:
         for mux_idx in range(NUM_MUX):          # select mux 
             setEnable(mux_idx)                  # enable specific mux
-            # 0 - 15 
             for rfid_idx in range(NUM_RFID):    # select specific mux element 
                 #read RFID
-                label = "port" + str(NUM_RFID)
+                label = "port" + str(rfid_idx)
                 data = nfc.read(label)
 
                 mux_values[mux_idx * NUM_RFID + rfid_idx] = data
@@ -107,17 +104,18 @@ def read_rfid():
 
                 # If first read has square empty and second reads a value then set second value to mux_vals
                 if mux_values[mux_idx * NUM_RFID + rfid_idx] != data:
-                    if mux_values[mux_idx * NUM_RFID + rfid_idx] is 'None':
+                    if mux_values[mux_idx * NUM_RFID + rfid_idx] is None:
                         mux_values[mux_idx * NUM_RFID + rfid_idx] = data;
                 time.sleep(SLEEP)
-      
+    except KeyboardInterrupt:
+        clear_lcd1()
+        print_lcd1('RFID Hardware Error. Assistance Needed')      
+    finally:
         GPIO.cleanup()
         adc.close()
         return format_read(mux_values)
 
-    except KeyboardInterrupt:
-        clear_lcd1()
-        print_lcd1('RFID Hardware Error. Assistance Needed')
+
 
 def format_read(mux_values):
     board_read = create_board_matrix

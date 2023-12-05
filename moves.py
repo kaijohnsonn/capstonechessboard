@@ -18,7 +18,6 @@ def stream_game_state(client, gameId, color):
     game_state = client.board.stream_game_state(gameId)
     previous_board = read_rfid() # should read init state on an init button press
 
-
     for state in game_state:
         if state['type'] == 'gameFull':
             state = state['state']

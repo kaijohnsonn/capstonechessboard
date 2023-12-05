@@ -6,7 +6,7 @@ import time
 
 def verify_opp_move(previous_board, color, opp_move):
     #CHECKKKKK
-    opponent_but = but2_pressed[0] if color == 'white' else but1_pressed[0]
+    opponent_but = but1_pressed[0] if color == 'white' else but2_pressed[0]
 
     while True:
         if opponent_but:
